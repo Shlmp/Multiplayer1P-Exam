@@ -1,12 +1,15 @@
 using UnityEngine;
 using Mirror;
+using TMPro;
+using System.Collections;
 
 public class PlayerMovement : NetworkBehaviour
 {
     private Rigidbody2D rb;
     private Vector2 moveInput;
-
     public float speed = 5f;
+    
+    public GameObject tmp;
 
     [SyncVar(hook = nameof(OnColorChanged))]
     private Color playerColor; // Sync color across clients
@@ -17,6 +20,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        Invoke("HideMessage", 3f);
     }
 
     public override void OnStartServer()
@@ -59,5 +63,11 @@ public class PlayerMovement : NetworkBehaviour
             spriteRenderer = GetComponent<SpriteRenderer>();
 
         spriteRenderer.color = newColor;
+    }
+
+    [Command]
+    private void HideMessage()
+    {
+        tmp.SetActive(false);
     }
 }
