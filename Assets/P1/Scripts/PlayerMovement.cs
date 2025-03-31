@@ -8,9 +8,27 @@ public class PlayerMovement : NetworkBehaviour
 
     public float speed = 5f;
 
+    [SyncVar(hook = nameof(OnColorChanged))]
+    private Color playerColor; // Sync color across clients
+
+    private SpriteRenderer spriteRenderer;
+
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>(); // Get Rigidbody2D reference
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        playerColor = GetRandomColor(); // Assign a random color on the server
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        OnColorChanged(Color.white, playerColor); // Apply the color on the client
     }
 
     void Update()
@@ -27,7 +45,19 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
-        // Apply velocity directly for better movement
         rb.linearVelocity = moveInput * speed;
+    }
+
+    private Color GetRandomColor()
+    {
+        return new Color(Random.value, Random.value, Random.value);
+    }
+
+    private void OnColorChanged(Color oldColor, Color newColor)
+    {
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+
+        spriteRenderer.color = newColor;
     }
 }

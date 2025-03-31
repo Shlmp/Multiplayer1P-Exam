@@ -4,7 +4,7 @@ using TMPro;
 
 public class ScoreboardManager : NetworkBehaviour
 {
-    public TMP_Text scoreText;  // Assign in Unity Inspector
+    public TMP_Text scoreText;
 
     private void OnEnable()
     {

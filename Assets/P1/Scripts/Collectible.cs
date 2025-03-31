@@ -3,40 +3,46 @@ using Mirror;
 
 public class Collectible : NetworkBehaviour
 {
-    private Camera mainCamera;
-
     private void Start()
     {
         if (isServer)
         {
-            mainCamera = Camera.main;
-            Reposition();
+            SetRandomPosition();
         }
     }
 
-    [ServerCallback]
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.TryGetComponent(out PlayerScore player))
+        if (!collision.CompareTag("Player")) return;
+
+        if (collision.TryGetComponent(out PlayerScore playerScore))
         {
-            player.IncreaseScore();
-            Reposition();
+            playerScore.CmdIncreaseScore(); // Only this method will increase score
+            CmdCollectItem(); // Move collectible
         }
     }
 
-    [Server]
-    private void Reposition()
+    [Command(requiresAuthority = false)]
+    private void CmdCollectItem()
     {
-        if (mainCamera == null) return;
+        SetRandomPosition();
+    }
 
-        // Get camera bounds in world space
-        float camHeight = mainCamera.orthographicSize * 2f;
-        float camWidth = camHeight * mainCamera.aspect;
+    private void SetRandomPosition()
+    {
+        Vector3 newPosition = GetRandomPosition();
+        transform.position = newPosition;
+        RpcUpdatePosition(newPosition);
+    }
 
-        // Random position within the camera's view
-        float x = Random.Range(mainCamera.transform.position.x - camWidth / 2, mainCamera.transform.position.x + camWidth / 2);
-        float y = Random.Range(mainCamera.transform.position.y - camHeight / 2, mainCamera.transform.position.y + camHeight / 2);
+    [ClientRpc]
+    private void RpcUpdatePosition(Vector3 newPosition)
+    {
+        transform.position = newPosition;
+    }
 
-        transform.position = new Vector2(x, y);
+    private Vector3 GetRandomPosition()
+    {
+        return new Vector3(Random.Range(-5f, 5f), Random.Range(-3f, 3f), 0f);
     }
 }

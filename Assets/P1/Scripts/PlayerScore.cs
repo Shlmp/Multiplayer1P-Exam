@@ -17,6 +17,17 @@ public class PlayerScore : NetworkBehaviour
         UpdateScoreboard?.Invoke();
     }
 
+    [Command]
+    public void CmdIncreaseScore()
+    {
+        if (!isServer) return;
+
+        score++;
+        UpdateScoreboard?.Invoke();
+    }
+
+
+
     private void OnScoreChanged(int oldScore, int newScore)
     {
         UpdateScoreboard?.Invoke();
